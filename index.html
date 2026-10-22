@@ -380,6 +380,7 @@ el("btnCallGraph").addEventListener("click", callGraph);
 
 // Carregador do MSAL.js com fallback entre CDNs confiaveis.
 const MSAL_CDNS = [
+  "./msal-browser.min.js",
   "https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.4/lib/msal-browser.min.js",
   "https://unpkg.com/@azure/msal-browser@2.38.4/lib/msal-browser.min.js",
   "https://alcdn.msftauth.net/browser/2.38.3/js/msal-browser.min.js"
