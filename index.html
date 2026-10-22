@@ -213,7 +213,7 @@ h1 {
       </div>
     </div>
 
-    <!--<div class="config-note" data-glean-id="config-note">
+    <!-- <div class="config-note" data-glean-id="config-note">
       <strong>Antes de publicar:</strong> edite o bloco <code>msalConfig</code> no código com o
       <code>clientId</code> (App Registration), o <code>authority</code> do tenant do cliente e o
       <code>redirectUri</code> cadastrado como SPA. Sem esses valores reais o login não é concluído.
@@ -254,16 +254,31 @@ const GRAPH_ME = "https://graph.microsoft.com/v1.0/me";
 /* =========================================================================
    2) INICIALIZAÇÃO
    ========================================================================= */
-const msalInstance = new msal.PublicClientApplication(msalConfig);
-
 const el = (id) => document.getElementById(id);
 function showError(msg) {
   const box = el("errorBox");
   box.textContent = msg;
   box.style.display = "block";
+  console.error("[auth]", msg);
+}
+
+let msalInstance = null;
+
+// Valida a configuracao antes de criar a instancia MSAL
+function configProblem() {
+  if (typeof msal === "undefined")
+    return "MSAL.js nao carregou (verifique rede/CSP e o <script> da CDN).";
+  if (msalConfig.auth.clientId.startsWith("0000"))
+    return "Defina o clientId real no msalConfig (ainda esta com o placeholder).";
+  if (msalConfig.auth.authority.includes("<"))
+    return "Defina o authority real com o TENANT_ID do cliente (ainda esta com o placeholder).";
+  return null;
 }
 
 async function init() {
+  const problem = configProblem();
+  if (problem) { showError(problem); return; }
+  msalInstance = new msal.PublicClientApplication(msalConfig);
   await msalInstance.initialize();
   // Trata o retorno de loginRedirect (se usado)
   try {
@@ -286,6 +301,9 @@ async function init() {
    3) FLUXOS DE LOGIN
    ========================================================================= */
 async function loginPopup() {
+  const problem = configProblem();
+  if (problem) { showError(problem); return; }
+  if (!msalInstance) { showError("MSAL nao inicializou. Veja o console (F12)."); return; }
   try {
     const result = await msalInstance.loginPopup(loginRequest);
     msalInstance.setActiveAccount(result.account);
@@ -296,6 +314,9 @@ async function loginPopup() {
 }
 
 function loginRedirect() {
+  const problem = configProblem();
+  if (problem) { showError(problem); return; }
+  if (!msalInstance) { showError("MSAL nao inicializou. Veja o console (F12)."); return; }
   msalInstance.loginRedirect(loginRequest);
 }
 
@@ -351,12 +372,14 @@ function renderSignedIn(account) {
 /* =========================================================================
    6) EVENTOS
    ========================================================================= */
+// Handlers conectados ANTES do init: o clique sempre responde,
+// mesmo que a configuracao/MSAL ainda nao estejam prontos.
 el("btnLoginPopup").addEventListener("click", loginPopup);
 el("btnLoginRedirect").addEventListener("click", loginRedirect);
 el("btnLogout").addEventListener("click", logout);
 el("btnCallGraph").addEventListener("click", callGraph);
 
-init();
+init().catch((e) => showError("Falha ao inicializar: " + e.message));
 </script>
 
 <script>
