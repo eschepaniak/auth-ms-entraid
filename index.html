@@ -213,11 +213,11 @@ h1 {
       </div>
     </div>
 
-    <div class="config-note" data-glean-id="config-note">
+    <!--<div class="config-note" data-glean-id="config-note">
       <strong>Antes de publicar:</strong> edite o bloco <code>msalConfig</code> no código com o
       <code>clientId</code> (App Registration), o <code>authority</code> do tenant do cliente e o
       <code>redirectUri</code> cadastrado como SPA. Sem esses valores reais o login não é concluído.
-    </div>
+    </div> -->
 
   </div>
 </div>
@@ -231,11 +231,11 @@ h1 {
 const msalConfig = {
   auth: {
     // Application (client) ID do App Registration no portal Entra ID
-    clientId: "00000000-0000-0000-0000-000000000000",
+    clientId: "36ceae4c-4c0b-4b6c-9cae-57f0eeb3045a",
     // Para federar com o tenant ESPECÍFICO do cliente, use o Directory (tenant) ID:
     //   https://login.microsoftonline.com/<TENANT_ID_DO_CLIENTE>
     // Para aceitar qualquer conta corporativa/escolar use "organizations".
-    authority: "https://login.microsoftonline.com/<TENANT_ID_DO_CLIENTE>",
+    authority: "https://login.microsoftonline.com/2d4f0f18-899c-49d1-9d26-c5ae17049cf9",
     // Precisa estar cadastrado como "Single-page application (SPA)" no App Registration
     redirectUri: window.location.origin + window.location.pathname,
     postLogoutRedirectUri: window.location.origin + window.location.pathname
