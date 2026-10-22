@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="glean-artifact-type" content="web_design">
+<title>Autenticação — Entra ID</title>
+<style>
+:root {
+  --artifact-background: #ffffff;
+  --artifact-background-light: #f1f3f6;
+  --artifact-background-mid: #e9ecf1;
+  --artifact-border-light: #e3e6ec;
+  --artifact-border-dark: #cdd2db;
+  --artifact-primary-brand: #3559e6;
+  --artifact-primary-highlight: #0d0f14;
+  --artifact-primary-hover: #2442b8;
+  --artifact-selected: #eaeefc;
+  --artifact-text-primary: #11141a;
+  --artifact-text-secondary: #5c6470;
+  --artifact-text-highlight: #e8eefc;
+  --artifact-positive-background: #e8f6ee;
+  --artifact-positive-text: #11141a;
+  --artifact-positive: #159a6a;
+  --artifact-negative: #dc4c4c;
+  --artifact-card-shadow: 0 1px 2px rgba(16,20,26,0.04);
+}
+html[data-theme='dark'] {
+  --artifact-background: #0a0b0e;
+  --artifact-background-light: #121419;
+  --artifact-background-mid: #181b22;
+  --artifact-border-light: #23262e;
+  --artifact-border-dark: #343844;
+  --artifact-primary-brand: #6a92ff;
+  --artifact-primary-highlight: #f5f7fb;
+  --artifact-primary-hover: #88a8ff;
+  --artifact-selected: #1a2030;
+  --artifact-text-primary: #eef0f4;
+  --artifact-text-secondary: #9aa0ad;
+  --artifact-text-highlight: #14213d;
+  --artifact-positive-background: #0e2a1d;
+  --artifact-positive-text: #c8f5da;
+  --artifact-positive: #46d39a;
+  --artifact-negative: #ff6b6b;
+  --artifact-card-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+* { box-sizing: border-box; }
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 16px; font-weight: 400; line-height: 1.6; letter-spacing: -0.005em;
+  margin: 0; min-height: 100vh;
+  background-color: var(--artifact-background);
+  color: var(--artifact-text-primary);
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px 20px;
+}
+.shell { width: 100%; max-width: 440px; }
+.eyebrow {
+  font-family: "SF Mono", "IBM Plex Mono", "Consolas", monospace;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--artifact-text-secondary); margin: 0 0 14px;
+}
+.card {
+  background: var(--artifact-background);
+  border: 1px solid var(--artifact-border-light);
+  border-radius: 10px; padding: 40px 36px;
+  box-shadow: var(--artifact-card-shadow);
+}
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+.brand .logo { width: 30px; height: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.brand .logo span { border-radius: 2px; }
+.brand .logo span:nth-child(1){ background:#f25022; }
+.brand .logo span:nth-child(2){ background:#7fba00; }
+.brand .logo span:nth-child(3){ background:#00a4ef; }
+.brand .logo span:nth-child(4){ background:#ffb900; }
+.brand .brand-name { font-size: 14px; font-weight: 500; color: var(--artifact-text-secondary); }
+h1 {
+  font-family: "Inter", sans-serif; font-weight: 300; line-height: 1.1;
+  letter-spacing: -0.02em; font-size: 2rem; margin: 0 0 8px;
+  color: var(--artifact-text-primary);
+}
+.sub { color: var(--artifact-text-secondary); font-size: 14px; margin: 0 0 30px; }
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 13px 18px; border-radius: 7px; cursor: pointer;
+  font-size: 15px; font-weight: 500; font-family: inherit; border: 1px solid transparent;
+  transition: background .15s ease, border-color .15s ease;
+}
+.btn-primary { background: var(--artifact-primary-brand); color: #ffffff; }
+.btn-primary:hover { background: var(--artifact-primary-hover); }
+.btn-ghost {
+  background: var(--artifact-background);
+  color: var(--artifact-text-primary);
+  border: 1px solid var(--artifact-border-dark);
+}
+.btn-ghost:hover { background: var(--artifact-background-light); }
+.btn .ms-logo { width: 18px; height: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5px; }
+.btn .ms-logo span { border-radius: 1px; }
+.btn .ms-logo span:nth-child(1){ background:#f25022; }
+.btn .ms-logo span:nth-child(2){ background:#7fba00; }
+.btn .ms-logo span:nth-child(3){ background:#00a4ef; }
+.btn .ms-logo span:nth-child(4){ background:#ffb900; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: var(--artifact-text-secondary); font-size: 12px; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--artifact-border-light); }
+.foot { margin-top: 26px; font-size: 12px; color: var(--artifact-text-secondary); text-align: center; line-height: 1.5; }
+.foot a { color: var(--artifact-primary-brand); text-decoration: none; }
+
+/* Signed-in state */
+#signedIn { display: none; }
+.profile { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+.avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--artifact-selected); color: var(--artifact-primary-brand);
+  display: grid; place-items: center; font-weight: 600; font-size: 18px; flex-shrink: 0;
+}
+.profile .pname { font-weight: 600; font-size: 16px; }
+.profile .pmail { color: var(--artifact-text-secondary); font-size: 13px; }
+.status {
+  display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500;
+  background: var(--artifact-positive-background); color: var(--artifact-positive-text);
+  padding: 5px 11px; border-radius: 20px; margin-bottom: 20px;
+}
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--artifact-positive); }
+.claims {
+  background: var(--artifact-background-light); border: 1px solid var(--artifact-border-light);
+  border-radius: 7px; padding: 14px 16px; margin-bottom: 22px;
+}
+.claims .field-label {
+  font-family: "SF Mono","Consolas",monospace; font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--artifact-text-secondary); margin-bottom: 10px;
+}
+.claim-row { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; padding: 4px 0; }
+.claim-row .k { color: var(--artifact-text-secondary); }
+.claim-row .v { color: var(--artifact-text-primary); font-family: "SF Mono","Consolas",monospace; font-size: 12px; text-align: right; word-break: break-all; }
+.alert {
+  display: none; font-size: 13px; padding: 10px 14px; border-radius: 7px; margin-bottom: 18px;
+  background: color-mix(in srgb, var(--artifact-negative) 12%, var(--artifact-background));
+  border: 1px solid var(--artifact-negative); color: var(--artifact-text-primary);
+}
+.config-note {
+  margin-top: 22px; font-size: 12px; color: var(--artifact-text-secondary);
+  background: var(--artifact-background-light); border: 1px dashed var(--artifact-border-dark);
+  border-radius: 7px; padding: 12px 14px; line-height: 1.55;
+}
+.config-note code { font-family: "SF Mono","Consolas",monospace; color: var(--artifact-primary-brand); }
+@media print {
+  @page { size: auto !important; }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="card" data-glean-id="auth-card">
+
+    <!-- Estado: não autenticado -->
+    <div id="signedOut" data-glean-id="signed-out">
+      <div class="brand">
+        <div class="logo"><span></span><span></span><span></span><span></span></div>
+        <span class="brand-name">Microsoft Entra ID</span>
+      </div>
+      <p class="eyebrow">Acesso seguro</p>
+      <h1>Entrar no Dashboard</h1>
+      <p class="sub">Use sua conta corporativa Microsoft Entra ID para continuar.</p>
+
+      <div id="errorBox" class="alert" data-glean-id="error-box"></div>
+
+      <button type="button" class="btn btn-primary" id="btnLoginPopup" data-glean-id="btn-login-popup">
+        <span class="ms-logo"><span></span><span></span><span></span><span></span></span>
+        Entrar com a Microsoft
+      </button>
+
+      <div class="divider">ou</div>
+
+      <button type="button" class="btn btn-ghost" id="btnLoginRedirect" data-glean-id="btn-login-redirect">
+        Entrar via redirecionamento
+      </button>
+
+      <p class="foot">
+        Ao continuar, você concorda com as políticas de acesso da sua organização.<br>
+        Problemas para entrar? Contate o administrador do tenant.
+      </p>
+    </div>
+
+    <!-- Estado: autenticado -->
+    <div id="signedIn" data-glean-id="signed-in">
+      <div class="status"><span class="dot"></span> Sessão autenticada</div>
+      <div class="profile">
+        <div class="avatar" id="avatar">?</div>
+        <div>
+          <div class="pname" id="userName">—</div>
+          <div class="pmail" id="userMail">—</div>
+        </div>
+      </div>
+
+      <div class="claims" data-glean-id="token-claims">
+        <div class="field-label">Claims do ID Token</div>
+        <div class="claim-row"><span class="k">Tenant (tid)</span><span class="v" id="claimTid">—</span></div>
+        <div class="claim-row"><span class="k">Object ID (oid)</span><span class="v" id="claimOid">—</span></div>
+        <div class="claim-row"><span class="k">UPN / preferred</span><span class="v" id="claimUpn">—</span></div>
+      </div>
+
+      <button type="button" class="btn btn-ghost" id="btnCallGraph" data-glean-id="btn-call-graph" style="margin-bottom:12px;">
+        Chamar Microsoft Graph (/me)
+      </button>
+      <button type="button" class="btn btn-ghost" id="btnLogout" data-glean-id="btn-logout">
+        Sair
+      </button>
+
+      <div class="claims" id="graphResult" style="display:none; margin-top:18px;">
+        <div class="field-label">Resposta do Graph</div>
+        <pre style="margin:0; font-family:'SF Mono','Consolas',monospace; font-size:12px; white-space:pre-wrap; word-break:break-all;" id="graphJson"></pre>
+      </div>
+    </div>
+
+    <div class="config-note" data-glean-id="config-note">
+      <strong>Antes de publicar:</strong> edite o bloco <code>msalConfig</code> no código com o
+      <code>clientId</code> (App Registration), o <code>authority</code> do tenant do cliente e o
+      <code>redirectUri</code> cadastrado como SPA. Sem esses valores reais o login não é concluído.
+    </div>
+
+  </div>
+</div>
+
+<!-- Biblioteca oficial da Microsoft: MSAL.js (Entra ID) -->
+<script src="https://alcdn.msftauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<script>
+/* =========================================================================
+   1) CONFIGURAÇÃO DO ENTRA ID  —  substitua pelos valores do App Registration
+   ========================================================================= */
+const msalConfig = {
+  auth: {
+    // Application (client) ID do App Registration no portal Entra ID
+    clientId: "00000000-0000-0000-0000-000000000000",
+    // Para federar com o tenant ESPECÍFICO do cliente, use o Directory (tenant) ID:
+    //   https://login.microsoftonline.com/<TENANT_ID_DO_CLIENTE>
+    // Para aceitar qualquer conta corporativa/escolar use "organizations".
+    authority: "https://login.microsoftonline.com/<TENANT_ID_DO_CLIENTE>",
+    // Precisa estar cadastrado como "Single-page application (SPA)" no App Registration
+    redirectUri: window.location.origin + window.location.pathname,
+    postLogoutRedirectUri: window.location.origin + window.location.pathname
+  },
+  cache: {
+    cacheLocation: "sessionStorage", // use "localStorage" para persistir entre abas
+    storeAuthStateInCookie: false
+  }
+};
+
+// Escopos solicitados no login (OIDC + perfil básico do Graph)
+const loginRequest = { scopes: ["openid", "profile", "User.Read"] };
+const graphRequest  = { scopes: ["User.Read"] };
+const GRAPH_ME = "https://graph.microsoft.com/v1.0/me";
+
+/* =========================================================================
+   2) INICIALIZAÇÃO
+   ========================================================================= */
+const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+const el = (id) => document.getElementById(id);
+function showError(msg) {
+  const box = el("errorBox");
+  box.textContent = msg;
+  box.style.display = "block";
+}
+
+async function init() {
+  await msalInstance.initialize();
+  // Trata o retorno de loginRedirect (se usado)
+  try {
+    const resp = await msalInstance.handleRedirectPromise();
+    if (resp && resp.account) {
+      msalInstance.setActiveAccount(resp.account);
+    }
+  } catch (e) {
+    showError("Falha no redirecionamento: " + e.message);
+  }
+  // Restaura sessão já existente
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length > 0) {
+    msalInstance.setActiveAccount(accounts[0]);
+    renderSignedIn(accounts[0]);
+  }
+}
+
+/* =========================================================================
+   3) FLUXOS DE LOGIN
+   ========================================================================= */
+async function loginPopup() {
+  try {
+    const result = await msalInstance.loginPopup(loginRequest);
+    msalInstance.setActiveAccount(result.account);
+    renderSignedIn(result.account);
+  } catch (e) {
+    showError("Login cancelado ou com erro: " + e.message);
+  }
+}
+
+function loginRedirect() {
+  msalInstance.loginRedirect(loginRequest);
+}
+
+function logout() {
+  const account = msalInstance.getActiveAccount();
+  msalInstance.logoutRedirect({ account });
+}
+
+/* =========================================================================
+   4) OBTENÇÃO SILENCIOSA DE TOKEN + CHAMADA AO GRAPH
+   ========================================================================= */
+async function getToken() {
+  const account = msalInstance.getActiveAccount();
+  try {
+    const r = await msalInstance.acquireTokenSilent({ ...graphRequest, account });
+    return r.accessToken;
+  } catch (e) {
+    // Se o silent falhar (ex.: consentimento/MFA), cai para interativo
+    const r = await msalInstance.acquireTokenPopup(graphRequest);
+    return r.accessToken;
+  }
+}
+
+async function callGraph() {
+  try {
+    const token = await getToken();
+    const res = await fetch(GRAPH_ME, { headers: { Authorization: "Bearer " + token } });
+    const data = await res.json();
+    el("graphJson").textContent = JSON.stringify(data, null, 2);
+    el("graphResult").style.display = "block";
+  } catch (e) {
+    showError("Erro ao chamar o Graph: " + e.message);
+  }
+}
+
+/* =========================================================================
+   5) RENDERIZAÇÃO DA UI
+   ========================================================================= */
+function renderSignedIn(account) {
+  const claims = account.idTokenClaims || {};
+  const name = account.name || claims.name || "Usuário";
+  const mail = account.username || claims.preferred_username || "";
+  el("userName").textContent = name;
+  el("userMail").textContent = mail;
+  el("avatar").textContent = (name.trim()[0] || "?").toUpperCase();
+  el("claimTid").textContent = claims.tid || "—";
+  el("claimOid").textContent = claims.oid || "—";
+  el("claimUpn").textContent = claims.preferred_username || mail || "—";
+  el("signedOut").style.display = "none";
+  el("signedIn").style.display = "block";
+}
+
+/* =========================================================================
+   6) EVENTOS
+   ========================================================================= */
+el("btnLoginPopup").addEventListener("click", loginPopup);
+el("btnLoginRedirect").addEventListener("click", loginRedirect);
+el("btnLogout").addEventListener("click", logout);
+el("btnCallGraph").addEventListener("click", callGraph);
+
+init();
+</script>
+
+<script>
+  // PDF export (inerte na tela, ativa só ao imprimir)
+  if (window.GleanBridge) {
+    window.GleanBridge.postMessage({
+      actionId: 'export-pdf', type: 'glean-add-menu',
+      metadata: { label: 'Export as PDF', icon: 'export' }
+    });
+    window.GleanBridge.onMessage('action', function(data) {
+      if (data.actionId === 'export-pdf') window.print();
+    });
+  }
+</script>
+</body>
+</html>
