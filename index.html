@@ -170,12 +170,6 @@ h1 {
         Entrar com a Microsoft
       </button>
 
-      <!-- <div class="divider">ou</div>
-
-      <button type="button" class="btn btn-ghost" id="btnLoginRedirect" data-glean-id="btn-login-redirect">
-        Entrar via redirecionamento
-      </button> -->
-
       <p class="foot">
         Ao continuar, você concorda com as políticas de acesso da sua organização.<br>
         Problemas para entrar? Contate o administrador do tenant.
@@ -374,7 +368,6 @@ function renderSignedIn(account) {
 // Handlers conectados ANTES do init: o clique sempre responde,
 // mesmo que a configuracao/MSAL ainda nao estejam prontos.
 el("btnLoginPopup").addEventListener("click", loginPopup);
-el("btnLoginRedirect").addEventListener("click", loginRedirect);
 el("btnLogout").addEventListener("click", logout);
 el("btnCallGraph").addEventListener("click", callGraph);
 
