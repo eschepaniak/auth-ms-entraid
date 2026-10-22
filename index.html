@@ -159,7 +159,7 @@ h1 {
         <div class="logo"><span></span><span></span><span></span><span></span></div>
         <span class="brand-name">Microsoft Entra ID</span>
       </div>
-      <p class="eyebrow">Acesso Federado</p>
+      <p class="eyebrow">Acesso federado Entra ID</p>
       <h1>Entrar no Dashboard</h1>
       <p class="sub">Use sua conta corporativa Microsoft Entra ID para continuar.</p>
 
@@ -222,8 +222,7 @@ h1 {
   </div>
 </div>
 
-<!-- Biblioteca oficial da Microsoft: MSAL.js (Entra ID) -->
-<script src="https://alcdn.msftauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<!-- MSAL.js carregado via loader com multiplas CDNs de fallback (abaixo) -->
 <script>
 /* =========================================================================
    1) CONFIGURAÇÃO DO ENTRA ID  —  substitua pelos valores do App Registration
@@ -379,7 +378,34 @@ el("btnLoginRedirect").addEventListener("click", loginRedirect);
 el("btnLogout").addEventListener("click", logout);
 el("btnCallGraph").addEventListener("click", callGraph);
 
-init().catch((e) => showError("Falha ao inicializar: " + e.message));
+// Carregador do MSAL.js com fallback entre CDNs confiaveis.
+const MSAL_CDNS = [
+  "https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.4/lib/msal-browser.min.js",
+  "https://unpkg.com/@azure/msal-browser@2.38.4/lib/msal-browser.min.js",
+  "https://alcdn.msftauth.net/browser/2.38.3/js/msal-browser.min.js"
+];
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error("CDN falhou: " + src));
+    document.head.appendChild(s);
+  });
+}
+async function ensureMsal() {
+  if (typeof msal !== "undefined") return;
+  for (const url of MSAL_CDNS) {
+    try {
+      await loadScript(url);
+      if (typeof msal !== "undefined") { console.info("[auth] MSAL carregado de", url); return; }
+    } catch (e) { console.warn("[auth]", e.message); }
+  }
+  throw new Error("MSAL.js nao carregou de nenhuma CDN. Verifique conexao, CSP do site ou bloqueadores de script.");
+}
+ensureMsal()
+  .then(init)
+  .catch((e) => showError(e.message));
 </script>
 
 <script>
