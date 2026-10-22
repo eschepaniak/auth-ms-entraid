@@ -170,11 +170,11 @@ h1 {
         Entrar com a Microsoft
       </button>
 
-     <!-- <div class="divider">ou</div>
+      <div class="divider">ou</div>
 
       <button type="button" class="btn btn-ghost" id="btnLoginRedirect" data-glean-id="btn-login-redirect">
         Entrar via redirecionamento
-      </button> -->
+      </button>
 
       <p class="foot">
         Ao continuar, você concorda com as políticas de acesso da sua organização.<br>
@@ -213,11 +213,11 @@ h1 {
       </div>
     </div>
 
-    <!-- <div class="config-note" data-glean-id="config-note">
+    <div class="config-note" data-glean-id="config-note">
       <strong>Antes de publicar:</strong> edite o bloco <code>msalConfig</code> no código com o
       <code>clientId</code> (App Registration), o <code>authority</code> do tenant do cliente e o
       <code>redirectUri</code> cadastrado como SPA. Sem esses valores reais o login não é concluído.
-    </div> -->
+    </div>
 
   </div>
 </div>
@@ -230,11 +230,11 @@ h1 {
 const msalConfig = {
   auth: {
     // Application (client) ID do App Registration no portal Entra ID
-    clientId: "36ceae4c-4c0b-4b6c-9cae-57f0eeb3045a",
+    clientId: "00000000-0000-0000-0000-000000000000",
     // Para federar com o tenant ESPECÍFICO do cliente, use o Directory (tenant) ID:
     //   https://login.microsoftonline.com/<TENANT_ID_DO_CLIENTE>
     // Para aceitar qualquer conta corporativa/escolar use "organizations".
-    authority: "https://login.microsoftonline.com/2d4f0f18-899c-49d1-9d26-c5ae17049cf9",
+    authority: "https://login.microsoftonline.com/<TENANT_ID_DO_CLIENTE>",
     // Precisa estar cadastrado como "Single-page application (SPA)" no App Registration
     redirectUri: window.location.origin + window.location.pathname,
     postLogoutRedirectUri: window.location.origin + window.location.pathname
@@ -378,7 +378,9 @@ el("btnLoginRedirect").addEventListener("click", loginRedirect);
 el("btnLogout").addEventListener("click", logout);
 el("btnCallGraph").addEventListener("click", callGraph);
 
-// Carregador do MSAL.js com fallback entre CDNs confiaveis.
+// Carregador do MSAL.js. 1o tenta o arquivo LOCAL (mesma origem, imune a CSP/bloqueio
+// de CDN); se nao existir, cai para as CDNs publicas.
+// -> Baixe msal-browser.min.js e coloque ao lado deste HTML no repositorio.
 const MSAL_CDNS = [
   "./msal-browser.min.js",
   "https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.4/lib/msal-browser.min.js",
